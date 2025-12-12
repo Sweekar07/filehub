@@ -2,6 +2,7 @@ version: '3.8'
 
 networks:
   openfga:
+    driver: bridge
 
 services:
   postgres:
@@ -54,6 +55,8 @@ services:
 
   django-web:
     build: ./filehub
+    volumes:
+      - ./filehub:/app
     container_name: django-docker
     ports:
       - "8000:8000"
