@@ -2,6 +2,7 @@ version: '3.8'
 
 networks:
   openfga:
+    driver: bridge
 
 services:
   postgres:
@@ -13,12 +14,10 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-    environment:
-      POSTGRES_DB: ${DATABASE_NAME}
-      POSTGRES_USER: ${DATABASE_USERNAME}
-      POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
+    env_file:
+      - .envs/.local/.env.postgres
     healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U ${DATABASE_USERNAME}" ]
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]   # here database_username is 'postgres' is hardcoded
       interval: 5s
       timeout: 5s
       retries: 5
@@ -29,10 +28,9 @@ services:
         condition: service_healthy
     image: openfga/openfga:latest
     container_name: migrate
+    env_file:
+      - .envs/.local/.env.openfga
     command: migrate
-    environment:
-      - OPENFGA_DATASTORE_ENGINE=postgres
-      - OPENFGA_DATASTORE_URI=postgres://${DATABASE_USERNAME}:${DATABASE_PASSWORD}@postgres:${DATABASE_PORT}/${DATABASE_NAME}?sslmode=disable
     networks:
       - openfga
 
@@ -42,10 +40,8 @@ services:
         condition: service_completed_successfully
     image: openfga/openfga:latest
     container_name: openfga
-    environment:
-      - OPENFGA_DATASTORE_ENGINE=postgres
-      - OPENFGA_DATASTORE_URI=postgres://${DATABASE_USERNAME}:${DATABASE_PASSWORD}@postgres:${DATABASE_PORT}/${DATABASE_NAME}?sslmode=disable
-      - OPENFGA_LOG_FORMAT=json
+    env_file:
+      - .envs/.local/.env.openfga
     command: run
     networks:
       - openfga
@@ -59,25 +55,16 @@ services:
 
   django-web:
     build: ./filehub
+    volumes:
+      - ./filehub:/app
     container_name: django-docker
     ports:
       - "8000:8000"
     depends_on:
       - postgres
-    environment:
-      DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY}
-      DEBUG: ${DEBUG}
-      DJANGO_LOGLEVEL: ${DJANGO_LOGLEVEL}
-      DJANGO_ALLOWED_HOSTS: ${DJANGO_ALLOWED_HOSTS}
-      DATABASE_ENGINE: ${DATABASE_ENGINE}
-      DATABASE_NAME: ${DATABASE_NAME}
-      DATABASE_USERNAME: ${DATABASE_USERNAME}
-        
-      DATABASE_PASSWORD: ${DATABASE_PASSWORD}
-      DATABASE_HOST: ${DATABASE_HOST}
-      DATABASE_PORT: ${DATABASE_PORT}
     env_file:
-      - .env
+      - .envs/.local/.env.django
+      - .envs/.local/.env.postgres
     networks:
     - openfga
 
