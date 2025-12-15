@@ -1,72 +1,76 @@
-version: '3.8'
-
 networks:
   openfga:
     driver: bridge
 
+volumes:
+  postgres_data_local:
+
 services:
   postgres:
     image: postgres:17
-    container_name: postgres
+    container_name: openfga-postgres
     networks:
       - openfga
     ports:
       - "5432:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - postgres_data_local:/var/lib/postgresql/data
     env_file:
-      - .envs/.local/.env.postgres
+      - .envs/.local/.env.postgres.temp
     healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U postgres" ]   # here database_username is 'postgres' is hardcoded
+      test: ["CMD-SHELL", "pg_isready -U openfga"]
       interval: 5s
       timeout: 5s
       retries: 5
 
-  migrate:
+  openfga-migrate:
+    image: openfga/openfga:latest
+    container_name: openfga-migrate
     depends_on:
       postgres:
         condition: service_healthy
-    image: openfga/openfga:latest
-    container_name: migrate
-    env_file:
-      - .envs/.local/.env.openfga
-    command: migrate
     networks:
       - openfga
+    env_file:
+      - .envs/.local/.env.openfga.temp
+    command: >
+      migrate
+      --datastore-engine postgres
+      --datastore-uri postgres://openfga:openfga@openfga-postgres:5432/openfga?sslmode=disable
 
   openfga:
-    depends_on:
-      migrate:
-        condition: service_completed_successfully
     image: openfga/openfga:latest
     container_name: openfga
-    env_file:
-      - .envs/.local/.env.openfga
-    command: run
+    depends_on:
+      openfga-migrate:
+        condition: service_completed_successfully
     networks:
       - openfga
+    env_file:
+      - .envs/.local/.env.openfga.temp
+      - .envs/.local/.env.postgres.temp
+    command: >
+      run
+      --datastore-engine postgres
+      --datastore-uri postgres://openfga:openfga@openfga-postgres:5432/openfga?sslmode=disable
     ports:
-      # Needed for the http server
-      - "8080:8080"
-      # Needed for the grpc server (if used)
-      - "8081:8081"
-      # Needed for the playground (Do not enable in prod!)
-      - "3000:3000"
+      - "8080:8080" # HTTP API
+      - "8081:8081" # gRPC API
+      - "3000:3000" # Playground (dev only)
 
   django-web:
     build: ./filehub
+    container_name: django-docker
     volumes:
       - ./filehub:/app
-    container_name: django-docker
     ports:
       - "8000:8000"
     depends_on:
-      - postgres
+      openfga:
+        condition: service_started
     env_file:
       - .envs/.local/.env.django
-      - .envs/.local/.env.postgres
+      - .envs/.local/.env.postgres.temp
+      - .envs/.local/.env.openfga.temp
     networks:
-    - openfga
-
-volumes:
-  postgres_data:
+      - openfga
