@@ -16,7 +16,7 @@ services:
     volumes:
       - postgres_data_local:/var/lib/postgresql/data
     env_file:
-      - .envs/.local/.env.postgres.temp
+      - .envs/.local/.env.postgres
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U openfga"]
       interval: 5s
@@ -32,11 +32,8 @@ services:
     networks:
       - openfga
     env_file:
-      - .envs/.local/.env.openfga.temp
-    command: >
-      migrate
-      --datastore-engine postgres
-      --datastore-uri postgres://openfga:openfga@openfga-postgres:5432/openfga?sslmode=disable
+      - .envs/.local/.env.openfga
+    command: migrate
 
   openfga:
     image: openfga/openfga:latest
@@ -47,12 +44,9 @@ services:
     networks:
       - openfga
     env_file:
-      - .envs/.local/.env.openfga.temp
-      - .envs/.local/.env.postgres.temp
-    command: >
-      run
-      --datastore-engine postgres
-      --datastore-uri postgres://openfga:openfga@openfga-postgres:5432/openfga?sslmode=disable
+      - .envs/.local/.env.openfga
+      - .envs/.local/.env.postgres
+    command: run
     ports:
       - "8080:8080" # HTTP API
       - "8081:8081" # gRPC API
@@ -70,7 +64,16 @@ services:
         condition: service_started
     env_file:
       - .envs/.local/.env.django
-      - .envs/.local/.env.postgres.temp
-      - .envs/.local/.env.openfga.temp
+      - .envs/.local/.env.postgres
+      - .envs/.local/.env.openfga
     networks:
       - openfga
+
+  openfga-cli:
+    image: openfga/cli:latest
+    networks:
+      - openfga
+    environment:
+      - FGA_API_URL=http://openfga:8080
+    volumes:
+      - ./stores:/data
