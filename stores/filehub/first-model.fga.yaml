@@ -1,0 +1,65 @@
+name: filehub   # store name
+
+model_file: ./first-model.fga
+
+tuple_file: ./first-model_tuples.yaml
+
+tests:
+    - name: "folder-document-access"
+
+      check:
+        - user: user:guido
+          object: file:python.pdf
+          assertions:
+            can_edit: true
+            can_view: true
+
+        - user: user:alice
+          object: file:python.pdf
+          assertions:
+            can_edit: true
+            can_view: true
+
+        - user: user:john
+          object: file:python.pdf
+          assertions:
+            can_edit: false
+            can_view: true
+
+        
+        - user: user:ryan
+          object: file:nodejs.pdf
+          assertions:
+            can_edit: true
+            can_view: true
+
+        - user: user:alice
+          object: file:nodejs.pdf
+          assertions:
+            can_edit: false
+            can_view: true
+
+        - user: user:john
+          object: file:nodejs.pdf
+          assertions:
+            can_edit: true
+            can_view: true
+
+        # Negative tests (must stay denied)
+        - user: user:eve
+          object: file:python.pdf
+          assertions:
+            can_edit: false
+            can_view: false
+
+        - user: user:guido
+          object: file:nodejs.pdf
+          assertions:
+            can_edit: false
+            can_view: false
+
+        - user: user:alice
+          object: file:some-other.pdf
+          assertions:
+            can_edit: false
+            can_view: false
