@@ -4,10 +4,13 @@ from openfga_sdk.credentials import Credentials, CredentialConfiguration
 
 def get_fga_client() -> OpenFgaClient:
     credentials = Credentials(
-        method="api_token",
-        configuration=CredentialConfiguration(
-            api_token=os.environ["FGA_API_TOKEN"]
-        )
+      method="client_credentials",
+      configuration=CredentialConfiguration(
+        api_issuer=os.environ.get("api_issuer"),
+        api_audience=os.environ.get("api_audience"),
+        client_id=os.environ.get("client_id"),
+        client_secret=os.environ.get("client_secret"),
+      )
     )
 
     config = ClientConfiguration(

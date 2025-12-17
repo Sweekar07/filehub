@@ -1,0 +1,38 @@
+networks:
+  openfga:
+    driver: bridge
+
+volumes:
+  postgres_data_dev:
+
+services:
+  postgres:
+    image: postgres:17
+    container_name: openfga-postgres
+    networks:
+      - openfga
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data_dev:/var/lib/postgresql/data
+    env_file:
+      - .envs/.dev/.env.postgres
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  django-web:
+    build: ./filehub
+    container_name: django-docker
+    volumes:
+      - ./filehub:/app
+    ports:
+      - "8000:8000"
+    env_file:
+      - .envs/.dev/.env.django
+      - .envs/.dev/.env.postgres
+      - .envs/.dev/.env.openfga
+    networks:
+      - openfga
