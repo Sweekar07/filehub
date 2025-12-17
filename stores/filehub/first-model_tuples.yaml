@@ -1,0 +1,25 @@
+# tuples created for python
+- user: user:guido
+  object: file:python.pdf
+  relation: owner
+
+- user: user:alice
+  object: file:python.pdf
+  relation: editor
+
+- user: user:john
+  object: file:python.pdf
+  relation: viewer
+
+  # tuples created for nodejs
+- user: user:ryan
+  object: file:nodejs.pdf
+  relation: owner
+
+- user: user:john
+  object: file:nodejs.pdf
+  relation: editor
+
+- user: user:alice
+  object: file:nodejs.pdf
+  relation: viewer
