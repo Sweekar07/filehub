@@ -18,7 +18,7 @@ services:
     env_file:
       - .envs/.local/.env.postgres
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U openfga"]
+      test: ["CMD-SHELL", "pg_isready -U openfga -d openfga_db"]
       interval: 5s
       timeout: 5s
       retries: 5
@@ -45,7 +45,6 @@ services:
       - openfga
     env_file:
       - .envs/.local/.env.openfga
-      - .envs/.local/.env.postgres
     command: run
     ports:
       - "8080:8080" # HTTP API
@@ -64,8 +63,6 @@ services:
         condition: service_started
     env_file:
       - .envs/.local/.env.django
-      - .envs/.local/.env.postgres
-      - .envs/.local/.env.openfga
     networks:
       - openfga
 
