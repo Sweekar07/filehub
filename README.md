@@ -37,6 +37,9 @@ Key Connections:
 - Host → Django (HTTP:8000) - API access via Postman/Browser
 - OpenFGA CLI → OpenFGA (HTTP:8080) - Store/model management
 
+### 3.2 Diagram
+![Architecture Diagram](./architecture-diagram.png)
+
 ## 4. Setup & Installation
 
 ### 4.1 Prerequisites
