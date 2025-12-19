@@ -300,17 +300,18 @@ response:
 OpenFGA uses a relationship-based model inspired by Google Zanzibar. Here's the authorization model for this project:
 ```bash
 model
-  schema 1.1
+    schema 1.1
 
 type user
 
 type file
-  relations
-    define owner: [user]
-    define editor: [user] or owner
-    define viewer: [user] or editor
-    define can_read: viewer
-    define can_write: editor
+    relations
+        define owner: [user]
+        define viewer: [user]
+        define editor: [user]
+
+        define can_edit: owner or editor
+        define can_view: viewer or can_edit     
 ```
 How it works:
 - owner: Full control over the file
@@ -356,7 +357,15 @@ Key Advantages
 | Flexibility         | Role explosion issue     | Relationship-based (fine-grained)aserto​              |
 | Maintenance         | High (custom code)       | Low (battle-tested patterns)dev​                      |
 
-## 7. Contributing
+## 7. Resources
+
+- [Django REST Framework](https://www.django-rest-framework.org/)
+- [Django REST Framework SimpleJWT](https://django-rest-framework-simplejwt.readthedocs.io/en/latest/)
+- [OpenFGA Configuration Guide](https://openfga.dev/docs/getting-started/setup-openfga/configure-openfga)
+- [OpenFGA Python SDK](https://github.com/openfga/python-sdk)
+- [OpenFGA CLI Store File Documentation](https://github.com/openfga/cli/blob/main/docs/STORE_FILE.md)
+
+## 8. Contributing
 
 Contributions are welcome! Please open an issue or submit a pull request.
 
