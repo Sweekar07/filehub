@@ -32,6 +32,9 @@ RUN useradd -m -r appuser && \
 COPY --from=builder /usr/local/lib/python3.13/site-packages/ /usr/local/lib/python3.13/site-packages/
 COPY --from=builder /usr/local/bin/ /usr/local/bin/
 
+# Copy the start script
+COPY start.sh /app/start.sh
+
 # Set the working directory
 WORKDIR /app
 
@@ -48,5 +51,5 @@ USER appuser
 # Expose the application port
 EXPOSE 8000
 
-# Run Django’s development server
-CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
+# Use the start script as the entry point
+ENTRYPOINT ["/app/start.sh"]
